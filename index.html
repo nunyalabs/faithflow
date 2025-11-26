@@ -230,10 +230,7 @@
         <div class="p-6 border-t border-slate-200/50 text-center bg-white/30">
             <p class="text-[10px] text-slate-500 font-medium mb-2">
                 Developed with <i class="bi bi-heart-fill text-red-500 inline-block align-text-top text-xs"></i> by<br>
-                <span class="font-bold text-slate-700">Godsway Sackey</span> | +233269609634
-            </p>
-            <p class="text-[9px] text-slate-400 mt-1">
-                For further customisation contact me on WhatsApp: +233269609634
+                <span class="font-bold text-slate-700">Godsway Sackey</span> | WhatsApp: +233269609634
             </p>
         </div>
         
@@ -1376,6 +1373,102 @@
                 }
             });
         });
+    </script>
+    <div id="pwa-notifications" class="fixed bottom-4 right-4 z-50 space-y-2"></div>
+
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js').then((reg) => {
+                    console.log('Service worker registered.', reg);
+                });
+            });
+
+            let installPromptEvent;
+
+            navigator.serviceWorker.addEventListener('message', (event) => {
+                const { type, payload } = event.data;
+
+                if (type === 'install-prompt') {
+                    handleInstallPrompt();
+                }
+
+                if (type === 'new-version') {
+                    showNotification('A new version is available!', 'Refresh', () => window.location.reload());
+                }
+
+                if (type === 'online') {
+                    showNotification('You are back online.', 'Dismiss', null, 3000);
+                }
+
+                if (type === 'offline') {
+                    showNotification('You are currently offline.', 'Dismiss', null, 3000);
+                }
+            });
+
+            function handleInstallPrompt() {
+                const isIos = () => /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+                const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+
+                if (isStandalone) {
+                    return;
+                }
+
+                if (isIos()) {
+                    showNotification(
+                        'To install, tap the Share button and then "Add to Home Screen".',
+                        'Dismiss',
+                        null,
+                        10000
+                    );
+                } else {
+                     // Show install button
+                    const installBtnId = 'install-pwa-btn';
+                    if (document.getElementById(installBtnId)) return;
+
+                    const button = document.createElement('button');
+                    button.id = installBtnId;
+                    button.innerHTML = `<i class="ph ph-download-simple text-xl mr-2"></i> Install App`;
+                    button.className = 'bg-theme-primary text-white px-6 py-3 rounded-xl font-bold shadow-lg flex items-center justify-center';
+                    button.onclick = () => {
+                         navigator.serviceWorker.controller.postMessage({ type: 'trigger-install-prompt' });
+                    };
+                    
+                    const container = document.getElementById('pwa-notifications');
+                    container.appendChild(button);
+                }
+            }
+
+            function showNotification(message, buttonText, onClick, duration = 5000) {
+                 const id = 'pwa-notification-' + Date.now();
+                 const notification = document.createElement('div');
+                 notification.id = id;
+                 notification.className = 'glass-card p-4 flex items-center justify-between gap-4';
+
+                 const messageEl = document.createElement('p');
+                 messageEl.textContent = message;
+                 notification.appendChild(messageEl);
+
+                 if(buttonText && onClick) {
+                    const button = document.createElement('button');
+                    button.textContent = buttonText;
+                    button.className = 'text-theme-primary font-bold';
+                    button.onclick = () => {
+                        onClick();
+                        notification.remove();
+                    };
+                    notification.appendChild(button);
+                 }
+                 
+                 document.getElementById('pwa-notifications').appendChild(notification);
+
+                 if(duration) {
+                    setTimeout(() => {
+                        notification.remove();
+                    }, duration);
+                 }
+            }
+        }
     </script>
 </body>
 </html>

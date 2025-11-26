@@ -20,6 +20,9 @@ const urlsToCache = [
   // Icons
   '/icons/icon-192.png',
   '/icons/icon-512.png',
+  '/icons/icon.svg',
+  '/icons/icon-maskable.svg',
+  '/icons/icon-monochrome.svg',
 
   // External CDN Assets
   'https://cdn.tailwindcss.com',
@@ -122,4 +125,65 @@ self.addEventListener('fetch', event => {
             });
         })
     );
+});
+
+// A new service worker has been activated.
+self.addEventListener('controllerchange', () => {
+  // This event is fired when the service worker controlling this page changes.
+  // This can happen when a new service worker is activated.
+  // You can use this event to notify the user that a new version of the app is available.
+  console.log('[ServiceWorker] New version available. Please refresh.');
+  self.clients.matchAll().then((clients) => {
+    clients.forEach((client) => {
+      client.postMessage({ type: 'new-version' });
+    });
+  });
+});
+
+let deferredPrompt;
+
+self.addEventListener('beforeinstallprompt', (e) => {
+  // Prevent Chrome 67 and earlier from automatically showing the prompt
+  e.preventDefault();
+  // Stash the event so it can be triggered later.
+  deferredPrompt = e;
+  // Notify the client that the app can be installed.
+  self.clients.matchAll().then((clients) => {
+    clients.forEach((client) => {
+      client.postMessage({ type: 'install-prompt' });
+    });
+  });
+});
+
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'trigger-install-prompt') {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then((choiceResult) => {
+        if (choiceResult.outcome === 'accepted') {
+          console.log('User accepted the install prompt');
+        } else {
+          console.log('User dismissed the install prompt');
+        }
+        deferredPrompt = null;
+      });
+    }
+  }
+});
+
+// Listen for online and offline events
+self.addEventListener('online', () => {
+  self.clients.matchAll().then((clients) => {
+    clients.forEach((client) => {
+      client.postMessage({ type: 'online' });
+    });
+  });
+});
+
+self.addEventListener('offline', () => {
+  self.clients.matchAll().then((clients) => {
+    clients.forEach((client) => {
+      client.postMessage({ type: 'offline' });
+    });
+  });
 });
