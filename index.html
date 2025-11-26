@@ -225,6 +225,17 @@
                 </a>
             </div>
         </nav>
+
+        <!-- Developer Footer -->
+        <div class="p-6 border-t border-slate-200/50 text-center bg-white/30">
+            <p class="text-[10px] text-slate-500 font-medium mb-2">
+                Developed with <i class="bi bi-heart-fill text-red-500 inline-block align-text-top text-xs"></i> by<br>
+                <span class="font-bold text-slate-700">Godsway Sackey</span> | +233269609634
+            </p>
+            <p class="text-[9px] text-slate-400 mt-1">
+                For further customisation contact me on WhatsApp: +233269609634
+            </p>
+        </div>
         
         <!-- Import Input Hidden -->
         <input type="file" id="import-file" accept=".json" class="hidden" onchange="app.io.handleImport(this)">
@@ -269,8 +280,8 @@
     </div>
 
     <script>
-        /** * FAITHFLOW CORE ENGINE v3.0
-         * Features: Custom Data Parsers, Auto-Config, Nested Bible Search
+        /** * FAITHFLOW CORE ENGINE v3.2
+         * Features: Corrected Finance Logic, Footer Updates
          */
 
         const DB_KEYS = {
@@ -310,8 +321,6 @@
                 }
 
                 // 3. Auto-load Content files
-                // Using merge=true for lists (hymns, announcements, members) to add new items
-                // Using merge=false for Bible to replace with the full book structure
                 await this.loadExternalData('data/bible.json', DB_KEYS.BIBLE, false);
                 await this.loadExternalData('data/hymns.json', DB_KEYS.HYMNS, true);
                 await this.loadExternalData('data/announcements.json', DB_KEYS.ANNOUNCEMENTS, true);
@@ -332,7 +341,6 @@
                             primaryColor: config.defaultTheme?.primaryColor || currentSettings.primaryColor,
                             secondaryColor: config.defaultTheme?.secondaryColor || currentSettings.secondaryColor,
                             accentColor: config.defaultTheme?.accentColor || currentSettings.accentColor,
-                            // Store other config parts if needed
                             financeCategories: config.financeCategories
                         };
                         this.set(DB_KEYS.SETTINGS, newSettings);
@@ -516,7 +524,13 @@
                     const members = Utils.safeArray(Store.get(DB_KEYS.MEMBERS));
                     const hymns = Utils.safeArray(Store.get(DB_KEYS.HYMNS));
                     const finance = Utils.safeArray(Store.get(DB_KEYS.FINANCE));
-                    const totalFinance = finance.reduce((acc, curr) => acc + (parseFloat(curr.amount) || 0), 0);
+                    
+                    // Corrected Total Funds Logic: Income - Expense
+                    const totalFunds = finance.reduce((acc, curr) => {
+                        const amount = parseFloat(curr.amount) || 0;
+                        return curr.type === 'expense' ? acc - amount : acc + amount;
+                    }, 0);
+
                     const announcements = Utils.safeArray(Store.get(DB_KEYS.ANNOUNCEMENTS)).slice(0, 3);
                     const settings = Store.get(DB_KEYS.SETTINGS);
 
@@ -539,7 +553,7 @@
                                     <i class="ph ph-currency-dollar text-8xl text-green-600"></i>
                                 </div>
                                 <p class="text-sm font-bold text-slate-500 uppercase tracking-wider">Total Funds</p>
-                                <h3 class="text-4xl font-bold text-slate-800">${Utils.formatMoney(totalFinance)}</h3>
+                                <h3 class="text-4xl font-bold ${totalFunds < 0 ? 'text-red-600' : 'text-slate-800'}">${Utils.formatMoney(totalFunds)}</h3>
                             </div>
                             <div class="glass-card p-6 flex flex-col justify-between h-32 relative overflow-hidden group">
                                 <div class="absolute right-0 top-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
@@ -918,6 +932,13 @@
                                         Tap to select a .json file received from Admin
                                     </button>
                                 </div>
+                            </div>
+
+                            <!-- Developer Tag -->
+                            <div class="text-center mt-8">
+                                <p class="text-xs text-slate-400 bg-slate-100 inline-block px-4 py-2 rounded-full">
+                                    For further customisation contact me on WhatsApp: <strong class="text-slate-600">+233269609634</strong>
+                                </p>
                             </div>
                         </div>
                     `;
