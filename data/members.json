@@ -5,7 +5,7 @@
     "gender": "Male",
     "age": 35,
     "department": "Choir",
-    "phone": "+1-555-0101",
+    "phone": "0244009900",
     "joinedDate": "2023-01-15",
     "createdAt": "2025-01-15T10:00:00.000Z"
   },
@@ -15,7 +15,7 @@
     "gender": "Female",
     "age": 42,
     "department": "Ushering",
-    "phone": "+1-555-0102",
+    "phone": "0205449900",
     "joinedDate": "2022-06-20",
     "createdAt": "2024-06-20T10:00:00.000Z"
   },
@@ -25,7 +25,7 @@
     "gender": "Male",
     "age": 28,
     "department": "Youth",
-    "phone": "+1-555-0103",
+    "phone": "0598009900",
     "joinedDate": "2024-03-10",
     "createdAt": "2024-03-10T10:00:00.000Z"
   }

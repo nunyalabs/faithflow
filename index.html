@@ -269,8 +269,8 @@
     </div>
 
     <script>
-        /** * FAITHFLOW CORE ENGINE v2.2
-         * Features: Safety Checks, Robust Rendering
+        /** * FAITHFLOW CORE ENGINE v3.0
+         * Features: Custom Data Parsers, Auto-Config, Nested Bible Search
          */
 
         const DB_KEYS = {
@@ -287,7 +287,6 @@
             get(key, defaultVal = []) {
                 try {
                     const data = localStorage.getItem(key);
-                    // Critical Fix: Ensure JSON.parse doesn't return null if data is "null" string
                     const parsed = data ? JSON.parse(data) : null;
                     return parsed !== null ? parsed : defaultVal;
                 } catch(e) { return defaultVal; }
@@ -297,6 +296,10 @@
                 return data;
             },
             async init() {
+                // 1. Load Config from file first
+                await this.loadConfig();
+
+                // 2. Initialize defaults if config didn't set them
                 if (!localStorage.getItem(DB_KEYS.SETTINGS)) {
                     this.set(DB_KEYS.SETTINGS, {
                         churchName: "Grace Chapel",
@@ -304,16 +307,38 @@
                         primaryColor: "#3b82f6",
                         secondaryColor: "#8b5cf6"
                     });
-                    this.set(DB_KEYS.HYMNS, [
-                        {id: 1, title: "Amazing Grace", lyrics: "Amazing grace! How sweet the sound\nThat saved a wretch like me!\n\nI once was lost, but now am found;\nWas blind, but now I see."},
-                        {id: 2, title: "10,000 Reasons", lyrics: "Bless the Lord oh my soul\nOh my soul\nWorship His Holy name\n\nSing like never before\nOh my soul\nI'll worship Your Holy name"}
-                    ]);
-                    this.set(DB_KEYS.ANNOUNCEMENTS, [
-                        {id: 1, title: "Sunday Service", message: "Join us this Sunday at 9:00 AM for a special worship service.", date: new Date().toISOString().split('T')[0]}
-                    ]);
                 }
-                await this.loadExternalData('data/bible.json', DB_KEYS.BIBLE);
+
+                // 3. Auto-load Content files
+                // Using merge=true for lists (hymns, announcements, members) to add new items
+                // Using merge=false for Bible to replace with the full book structure
+                await this.loadExternalData('data/bible.json', DB_KEYS.BIBLE, false);
                 await this.loadExternalData('data/hymns.json', DB_KEYS.HYMNS, true);
+                await this.loadExternalData('data/announcements.json', DB_KEYS.ANNOUNCEMENTS, true);
+                await this.loadExternalData('data/members.json', DB_KEYS.MEMBERS, true);
+            },
+
+            async loadConfig() {
+                try {
+                    const response = await fetch('data/config.json');
+                    if (response.ok) {
+                        const config = await response.json();
+                        const currentSettings = this.get(DB_KEYS.SETTINGS) || {};
+                        
+                        // Map config.json structure to internal settings
+                        const newSettings = {
+                            ...currentSettings,
+                            churchName: config.defaultChurchName || currentSettings.churchName,
+                            primaryColor: config.defaultTheme?.primaryColor || currentSettings.primaryColor,
+                            secondaryColor: config.defaultTheme?.secondaryColor || currentSettings.secondaryColor,
+                            accentColor: config.defaultTheme?.accentColor || currentSettings.accentColor,
+                            // Store other config parts if needed
+                            financeCategories: config.financeCategories
+                        };
+                        this.set(DB_KEYS.SETTINGS, newSettings);
+                        console.log("Config loaded successfully");
+                    }
+                } catch (e) { console.log("No external config found, using defaults."); }
             },
 
             async loadExternalData(path, key, merge = false) {
@@ -321,13 +346,16 @@
                     const response = await fetch(path);
                     if (response.ok) {
                         const data = await response.json();
-                        if (merge) {
-                            const current = this.get(key) || [];
-                            const merged = [...current, ...data.filter(i => !current.find(c => c.title === i.title))];
-                            this.set(key, merged);
+                        if (merge && Array.isArray(data)) {
+                            const current = Utils.safeArray(this.get(key));
+                            // Deduplicate by ID or Title
+                            const newItems = data.filter(i => !current.find(c => (c.id && c.id === i.id) || (c.title && c.title === i.title)));
+                            this.set(key, [...current, ...newItems]);
                         } else {
-                            if(!localStorage.getItem(key)) this.set(key, data);
+                            // For objects like Bible or if replacing
+                            this.set(key, data);
                         }
+                        console.log(`Loaded ${path}`);
                     }
                 } catch (e) { console.log(`Auto-load skipped: ${path}`); }
             }
@@ -343,7 +371,7 @@
                 if(!dateStr) return '';
                 return new Date(dateStr).toLocaleDateString(undefined, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
             },
-            safeArray: (data) => Array.isArray(data) ? data : [] // Helper for view safety
+            safeArray: (data) => Array.isArray(data) ? data : [] 
         };
 
         const app = {
@@ -436,15 +464,19 @@
                 },
 
                 mergeData(data) {
-                    // Safe merging
-                    if (data.hymns) {
+                    // Smart merging based on known arrays vs objects
+                    if (data.hymns && Array.isArray(data.hymns)) {
                         const current = Utils.safeArray(Store.get(DB_KEYS.HYMNS));
                         const newItems = data.hymns.filter(n => !current.find(c => c.title === n.title));
                         Store.set(DB_KEYS.HYMNS, [...current, ...newItems]);
                     }
-                    if (data.announcements) {
+                    if (data.announcements && Array.isArray(data.announcements)) {
                         const current = Utils.safeArray(Store.get(DB_KEYS.ANNOUNCEMENTS));
                         Store.set(DB_KEYS.ANNOUNCEMENTS, [...current, ...data.announcements]);
+                    }
+                    if (data.members && Array.isArray(data.members)) {
+                        const current = Utils.safeArray(Store.get(DB_KEYS.MEMBERS));
+                        Store.set(DB_KEYS.MEMBERS, [...current, ...data.members]);
                     }
                     if (data.bible) {
                         Store.set(DB_KEYS.BIBLE, data.bible);
@@ -456,7 +488,7 @@
                     let data = { 
                         source: settings.churchName, 
                         timestamp: new Date().toISOString(),
-                        version: "2.2" 
+                        version: "3.0" 
                     };
                     if (type === 'full') {
                         data.members = Store.get(DB_KEYS.MEMBERS);
@@ -580,17 +612,17 @@
                                         <tr>
                                             <th class="px-8 py-5">Name</th>
                                             <th class="px-8 py-5">Phone</th>
-                                            <th class="px-8 py-5">Role</th>
+                                            <th class="px-8 py-5">Role/Dept</th>
                                             <th class="px-8 py-5 text-right">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody class="divide-y divide-slate-100">
                                         ${members.length ? members.map(m => `
                                             <tr class="hover:bg-blue-50/30 transition-colors">
-                                                <td class="px-8 py-5 font-semibold text-slate-700">${m.name}</td>
-                                                <td class="px-8 py-5 text-slate-500 font-mono text-sm">${m.phone}</td>
+                                                <td class="px-8 py-5 font-semibold text-slate-700">${m.fullName || m.name}</td>
+                                                <td class="px-8 py-5 text-slate-500 font-mono text-sm">${m.phone || '-'}</td>
                                                 <td class="px-8 py-5">
-                                                    <span class="px-3 py-1 bg-white/60 border border-slate-200 text-slate-700 rounded-full text-xs font-bold uppercase">${m.role || 'Member'}</span>
+                                                    <span class="px-3 py-1 bg-white/60 border border-slate-200 text-slate-700 rounded-full text-xs font-bold uppercase">${m.department || m.role || 'Member'}</span>
                                                 </td>
                                                 <td class="px-8 py-5 text-right">
                                                     <button onclick="app.deleteItem('${DB_KEYS.MEMBERS}', '${m.id}', 'members')" class="text-red-400 hover:text-red-600 hover:bg-red-50 p-2 rounded-lg transition-colors"><i class="ph ph-trash text-lg"></i></button>
@@ -659,9 +691,11 @@
                                 <div class="glass-card p-6 hover:shadow-xl hover:border-purple-300/50 transition-all group relative">
                                     <div class="flex justify-between items-start mb-4">
                                         <h3 class="font-bold text-xl text-slate-800 line-clamp-1">${h.title}</h3>
-                                        <div class="flex gap-2">
-                                            <button onclick="app.deleteItem('${DB_KEYS.HYMNS}', '${h.id}', 'worship')" class="text-slate-300 hover:text-red-500 p-2 transition-colors"><i class="ph ph-trash text-lg"></i></button>
-                                        </div>
+                                        ${h.number ? `<span class="text-xs font-bold bg-slate-100 text-slate-500 px-2 py-1 rounded">${h.number}</span>` : ''}
+                                    </div>
+                                    <div class="flex justify-between items-center mb-4">
+                                        <span class="text-xs text-purple-600 bg-purple-50 px-2 py-1 rounded uppercase tracking-wide">${h.category || 'Song'}</span>
+                                        <button onclick="app.deleteItem('${DB_KEYS.HYMNS}', '${h.id}', 'worship')" class="text-slate-300 hover:text-red-500 p-1 transition-colors"><i class="ph ph-trash"></i></button>
                                     </div>
                                     <div class="bg-slate-50/50 rounded-xl p-4 mb-4 border border-slate-100 h-32 overflow-hidden relative">
                                         <p class="text-slate-500 text-sm font-serif italic whitespace-pre-line leading-relaxed">${h.lyrics.substring(0, 150)}...</p>
@@ -716,7 +750,7 @@
                                     <i class="ph ph-book-open-text text-5xl text-blue-400"></i>
                                 </div>
                                 <h2 class="text-3xl font-bold text-slate-800 mb-2">Scripture Reader</h2>
-                                <p class="text-slate-500 mb-8 max-w-md">Access the word offline. Search for verses.</p>
+                                <p class="text-slate-500 mb-8 max-w-md">Access the word offline. Search by reference (e.g. "John 3:16") or keyword.</p>
                                 
                                 <div class="w-full max-w-lg relative mb-10">
                                     <input type="text" id="bible-search" placeholder="Search (e.g., 'John 3:16' or 'love')" class="w-full pl-6 pr-32 py-4 rounded-2xl border-none bg-slate-100 focus:bg-white focus:ring-4 focus:ring-blue-200 transition-all text-lg shadow-inner outline-none">
@@ -741,7 +775,7 @@
                                 <div id="bible-suggestions" class="mt-8 flex gap-3 text-sm text-slate-400">
                                     <span>Try:</span>
                                     <button onclick="document.getElementById('bible-search').value='John 3:16'; app.bibleSearch()" class="hover:text-blue-500 underline">John 3:16</button>
-                                    <button onclick="document.getElementById('bible-search').value='Psalm 23'; app.bibleSearch()" class="hover:text-blue-500 underline">Psalm 23</button>
+                                    <button onclick="document.getElementById('bible-search').value='Psalm 23:1'; app.bibleSearch()" class="hover:text-blue-500 underline">Psalm 23:1</button>
                                 </div>
                             </div>
                         </div>
@@ -1226,7 +1260,9 @@
             },
 
             bibleSearch() {
-                const query = document.getElementById('bible-search').value.toLowerCase();
+                const query = document.getElementById('bible-search').value.trim();
+                if(!query) return;
+                
                 const resDiv = document.getElementById('bible-result');
                 const errDiv = document.getElementById('bible-error');
                 const title = document.getElementById('verse-ref');
@@ -1237,16 +1273,61 @@
                 resDiv.classList.add('hidden');
                 errDiv.classList.add('hidden');
                 
-                // 1. Try searching loaded JSON data
-                const bibleData = Utils.safeArray(Store.get(DB_KEYS.BIBLE));
-                let found = bibleData.find(b => b.ref.toLowerCase().includes(query) || b.text.toLowerCase().includes(query));
+                const bibleData = Store.get(DB_KEYS.BIBLE);
+                let found = null;
 
-                // 2. Fallback to Demo Data
-                if (!found && bibleData.length === 0) {
-                    if (query.includes('john 3:16')) {
+                // Handle Nested Object Structure (Standard Bible JSON)
+                if (bibleData && !Array.isArray(bibleData) && Object.keys(bibleData).length > 0) {
+                    // 1. Parse Reference (e.g. "John 3:16" or "1 John 1:9")
+                    // Regex looks for: [Book Name] [Chapter]:[Verse]
+                    const refRegex = /^(\d?\s?[a-zA-Z]+)\s+(\d+)[:\s](\d+)$/; 
+                    const match = query.match(refRegex);
+                    
+                    if (match) {
+                        const bookQuery = match[1].trim().toLowerCase();
+                        const chapter = match[2];
+                        const verse = match[3];
+
+                        // Case-insensitive Book Lookup
+                        const bookKey = Object.keys(bibleData).find(k => k.toLowerCase() === bookQuery);
+                        
+                        if (bookKey && bibleData[bookKey][chapter] && bibleData[bookKey][chapter][verse]) {
+                            found = {
+                                ref: `${bookKey} ${chapter}:${verse}`,
+                                text: bibleData[bookKey][chapter][verse]
+                            };
+                        }
+                    } else {
+                        // 2. Keyword Search (Iterate entire Bible)
+                        const lowerQuery = query.toLowerCase();
+                        // Break loops once found for performance
+                        outerLoop:
+                        for (const [book, chapters] of Object.entries(bibleData)) {
+                            for (const [chapNum, verses] of Object.entries(chapters)) {
+                                for (const [verseNum, verseText] of Object.entries(verses)) {
+                                    if (String(verseText).toLowerCase().includes(lowerQuery)) {
+                                        found = {
+                                            ref: `${book} ${chapNum}:${verseNum}`,
+                                            text: verseText
+                                        };
+                                        break outerLoop;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } 
+                // Fallback to Array structure (if user used simple list format)
+                else if (Array.isArray(bibleData)) {
+                     found = bibleData.find(b => b.ref.toLowerCase().includes(query.toLowerCase()) || b.text.toLowerCase().includes(query.toLowerCase()));
+                }
+
+                // Demo Fallback if nothing loaded
+                if (!found && (!bibleData || Object.keys(bibleData).length === 0)) {
+                    if (query.toLowerCase().includes('john 3:16')) {
                         found = { ref: "John 3:16", text: "For God so loved the world, that he gave his only begotten Son, that whosoever believeth in him should not perish, but have everlasting life." };
-                    } else if (query.includes('psalm 23')) {
-                        found = { ref: "Psalm 23", text: "The Lord is my shepherd; I shall not want. He maketh me to lie down in green pastures: he leadeth me beside the still waters." };
+                    } else if (query.toLowerCase().includes('psalm 23')) {
+                        found = { ref: "Psalm 23", text: "The Lord is my shepherd; I shall not want." };
                     }
                 }
 
@@ -1255,9 +1336,9 @@
                     text.innerText = found.text;
                     dataInput.value = JSON.stringify(found);
                     resDiv.classList.remove('hidden');
-                    suggestDiv.classList.add('hidden');
+                    if(suggestDiv) suggestDiv.classList.add('hidden');
                 } else {
-                    errDiv.innerText = "Verse not found. (Ensure 'data/bible.json' is loaded or query matches demo)";
+                    errDiv.innerText = "Verse not found. Check your spelling or ensure 'data/bible.json' is loaded.";
                     errDiv.classList.remove('hidden');
                 }
             }
