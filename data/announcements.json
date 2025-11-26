@@ -1,0 +1,20 @@
+[
+  {
+    "id": "1",
+    "title": "Sunday Service - November 10th",
+    "message": "Join us this Sunday at 9:00 AM for worship service. Guest speaker Pastor John will be ministering.",
+    "date": "2025-11-10"
+  },
+  {
+    "id": "2",
+    "title": "Youth Fellowship Meeting",
+    "message": "All youth are invited to our fellowship meeting on Saturday at 3:00 PM. Bring a friend!",
+    "date": "2025-11-09"
+  },
+  {
+    "id": "3",
+    "title": "Prayer Meeting",
+    "message": "Weekly prayer meeting every Wednesday at 6:00 PM. Let us gather in prayer.",
+    "date": "2025-11-13"
+  }
+]

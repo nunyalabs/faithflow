@@ -1,0 +1,14 @@
+{
+  "version": "1.0.0",
+  "appName": "FaithFlow",
+  "defaultChurchName": "FaithFlow Church",
+  "defaultTheme": {
+    "primaryColor": "#0d6efd",
+    "secondaryColor": "#6c757d",
+    "accentColor": "#ffc107"
+  },
+  "financeCategories": {
+    "required": ["Offering", "Special Offering", "Other"],
+    "optional": ["Tithe", "Thanksgiving", "Welfare"]
+  }
+}

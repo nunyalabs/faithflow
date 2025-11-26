@@ -1,0 +1,107 @@
+[
+  {
+    "id": "1",
+    "title": "Amazing Grace",
+    "number": "MHB 531",
+    "category": "Praise",
+    "lyrics": "Amazing grace! How sweet the sound\nThat saved a wretch like me!\nI once was lost, but now am found;\nWas blind, but now I see.\n\n'Twas grace that taught my heart to fear,\nAnd grace my fears relieved;\nHow precious did that grace appear\nThe hour I first believed.\n\nThrough many dangers, toils and snares,\nI have already come;\n'Tis grace hath brought me safe thus far,\nAnd grace will lead me home."
+  },
+  {
+    "id": "2",
+    "title": "How Great Thou Art",
+    "number": "MHB 17",
+    "category": "Worship",
+    "lyrics": "O Lord my God, when I in awesome wonder\nConsider all the worlds Thy hands have made,\nI see the stars, I hear the rolling thunder,\nThy power throughout the universe displayed.\n\nThen sings my soul, my Savior God, to Thee:\nHow great Thou art, how great Thou art!\nThen sings my soul, my Savior God, to Thee:\nHow great Thou art, how great Thou art!"
+  },
+  {
+    "id": "3",
+    "title": "Blessed Assurance",
+    "number": "MHB 562",
+    "category": "Praise",
+    "lyrics": "Blessed assurance, Jesus is mine!\nO what a foretaste of glory divine!\nHeir of salvation, purchase of God,\nBorn of His Spirit, washed in His blood.\n\nThis is my story, this is my song,\nPraising my Savior all the day long;\nThis is my story, this is my song,\nPraising my Savior all the day long."
+  },
+  {
+    "id": "4",
+    "title": "Holy, Holy, Holy",
+    "number": "MHB 7",
+    "category": "Worship",
+    "lyrics": "Holy, holy, holy! Lord God Almighty!\nEarly in the morning our song shall rise to Thee;\nHoly, holy, holy! Merciful and mighty!\nGod in three Persons, blessed Trinity!\n\nHoly, holy, holy! All the saints adore Thee,\nCasting down their golden crowns around the glassy sea;\nCherubim and seraphim falling down before Thee,\nWhich wert, and art, and evermore shalt be."
+  },
+  {
+    "id": "5",
+    "title": "What a Friend We Have in Jesus",
+    "number": "MHB 559",
+    "category": "Prayer",
+    "lyrics": "What a friend we have in Jesus,\nAll our sins and griefs to bear!\nWhat a privilege to carry\nEverything to God in prayer!\n\nO what peace we often forfeit,\nO what needless pain we bear,\nAll because we do not carry\nEverything to God in prayer!"
+  },
+  {
+    "id": "6",
+    "title": "Praise to the Lord, the Almighty",
+    "number": "MHB 8",
+    "category": "Praise",
+    "lyrics": "Praise to the Lord, the Almighty, the King of creation!\nO my soul, praise Him, for He is thy health and salvation!\nAll ye who hear, now to His temple draw near;\nJoin me in glad adoration!\n\nPraise to the Lord, who o'er all things so wondrously reigneth,\nShelters thee under His wings, yea, so gently sustaineth!\nHast thou not seen how thy desires e'er have been\nGranted in what He ordaineth?"
+  },
+  {
+    "id": "7",
+    "title": "Rock of Ages",
+    "number": "MHB 200",
+    "category": "Prayer",
+    "lyrics": "Rock of Ages, cleft for me,\nLet me hide myself in Thee;\nLet the water and the blood,\nFrom Thy wounded side which flowed,\nBe of sin the double cure,\nSave from wrath and make me pure.\n\nNothing in my hand I bring,\nSimply to Thy cross I cling;\nNaked, come to Thee for dress,\nHelpless, look to Thee for grace;\nFoul, I to the fountain fly;\nWash me, Savior, or I die."
+  },
+  {
+    "id": "8",
+    "title": "O God, Our Help in Ages Past",
+    "number": "MHB 63",
+    "category": "Worship",
+    "lyrics": "O God, our help in ages past,\nOur hope for years to come,\nOur shelter from the stormy blast,\nAnd our eternal home.\n\nUnder the shadow of Thy throne\nStill may we dwell secure;\nSufficient is Thine arm alone,\nAnd our defense is sure."
+  },
+  {
+    "id": "9",
+    "title": "Great Is Thy Faithfulness",
+    "number": "MHB 66",
+    "category": "Praise",
+    "lyrics": "Great is Thy faithfulness, O God my Father;\nThere is no shadow of turning with Thee;\nThou changest not, Thy compassions, they fail not;\nAs Thou hast been, Thou forever wilt be.\n\nGreat is Thy faithfulness! Great is Thy faithfulness!\nMorning by morning new mercies I see;\nAll I have needed Thy hand hath provided;\nGreat is Thy faithfulness, Lord, unto me!"
+  },
+  {
+    "id": "10",
+    "title": "Crown Him with Many Crowns",
+    "number": "MHB 172",
+    "category": "Worship",
+    "lyrics": "Crown Him with many crowns,\nThe Lamb upon His throne;\nHark! how the heavenly anthem drowns\nAll music but its own.\n\nAwake, my soul, and sing\nOf Him who died for thee,\nAnd hail Him as thy matchless King\nThrough all eternity."
+  },
+  {
+    "id": "11",
+    "title": "All Hail the Power of Jesus' Name",
+    "number": "MHB 173",
+    "category": "Praise",
+    "lyrics": "All hail the power of Jesus' Name!\nLet angels prostrate fall;\nBring forth the royal diadem,\nAnd crown Him Lord of all.\n\nYe chosen seed of Israel's race,\nYe ransomed from the fall,\nHail Him who saves you by His grace,\nAnd crown Him Lord of all."
+  },
+  {
+    "id": "12",
+    "title": "To God Be the Glory",
+    "number": "MHB 73",
+    "category": "Praise",
+    "lyrics": "To God be the glory, great things He hath done!\nSo loved He the world that He gave us His Son,\nWho yielded His life an atonement for sin,\nAnd opened the life-gate that all may go in.\n\nPraise the Lord, praise the Lord,\nLet the earth hear His voice!\nPraise the Lord, praise the Lord,\nLet the people rejoice!\nO come to the Father through Jesus the Son,\nAnd give Him the glory, great things He hath done!"
+  },
+  {
+    "id": "13",
+    "title": "Guide Me, O Thou Great Jehovah",
+    "number": "MHB 437",
+    "category": "Prayer",
+    "lyrics": "Guide me, O Thou great Jehovah,\nPilgrim through this barren land;\nI am weak, but Thou art mighty;\nHold me with Thy powerful hand.\n\nBread of heaven, bread of heaven,\nFeed me till I want no more,\nFeed me till I want no more."
+  },
+  {
+    "id": "14",
+    "title": "Jesus, Lover of My Soul",
+    "number": "MHB 128",
+    "category": "Prayer",
+    "lyrics": "Jesus, lover of my soul,\nLet me to Thy bosom fly,\nWhile the nearer waters roll,\nWhile the tempest still is high.\n\nHide me, O my Savior, hide,\nTill the storm of life is past;\nSafe into the haven guide;\nO receive my soul at last."
+  },
+  {
+    "id": "15",
+    "title": "When I Survey the Wondrous Cross",
+    "number": "MHB 182",
+    "category": "Communion",
+    "lyrics": "When I survey the wondrous cross\nOn which the Prince of glory died,\nMy richest gain I count but loss,\nAnd pour contempt on all my pride.\n\nForbid it, Lord, that I should boast,\nSave in the death of Christ my God!\nAll the vain things that charm me most,\nI sacrifice them to His blood."
+  }
+]
