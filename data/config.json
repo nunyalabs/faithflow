@@ -10,5 +10,12 @@
   "financeCategories": {
     "required": ["Offering", "Special Offering", "Other"],
     "optional": ["Tithe", "Thanksgiving", "Welfare"]
-  }
+  },
+  "currencies": [
+    { "name": "US Dollar", "code": "USD", "symbol": "$" },
+    { "name": "Euro", "code": "EUR", "symbol": "€" },
+    { "name": "British Pound", "code": "GBP", "symbol": "£" },
+    { "name": "Japanese Yen", "code": "JPY", "symbol": "¥" },
+    { "name": "Ghana Cedi", "code": "GHS", "symbol": "GH₵" }
+  ]
 }

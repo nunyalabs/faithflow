@@ -193,7 +193,7 @@
                 <span class="font-medium text-base">Members</span>
             </a>
             <a href="#" onclick="app.nav('finance')" class="sidebar-link flex items-center gap-4 px-4 py-3 transition-all group">
-                <i class="ph ph-currency-dollar text-2xl"></i>
+                <i class="ph ph-money text-2xl"></i>
                 <span class="font-medium text-base">Finance</span>
             </a>
             <a href="#" onclick="app.nav('worship')" class="sidebar-link flex items-center gap-4 px-4 py-3 transition-all group">
@@ -311,7 +311,7 @@
                 if (!localStorage.getItem(DB_KEYS.SETTINGS)) {
                     this.set(DB_KEYS.SETTINGS, {
                         churchName: "Grace Chapel",
-                        currency: "$",
+                        currency: "GHS",
                         primaryColor: "#3b82f6",
                         secondaryColor: "#8b5cf6"
                     });
@@ -338,7 +338,8 @@
                             primaryColor: config.defaultTheme?.primaryColor || currentSettings.primaryColor,
                             secondaryColor: config.defaultTheme?.secondaryColor || currentSettings.secondaryColor,
                             accentColor: config.defaultTheme?.accentColor || currentSettings.accentColor,
-                            financeCategories: config.financeCategories
+                            financeCategories: config.financeCategories,
+                            currencies: config.currencies
                         };
                         this.set(DB_KEYS.SETTINGS, newSettings);
                         console.log("Config loaded successfully");
@@ -370,7 +371,7 @@
             id: () => Date.now().toString(36) + Math.random().toString(36).substr(2),
             formatMoney: (amount) => {
                 const settings = Store.get(DB_KEYS.SETTINGS);
-                return `${settings.currency || '$'}${parseFloat(amount).toFixed(2)}`;
+                return `${settings.currency || 'GHS'}${parseFloat(amount).toFixed(2)}`;
             },
             formatDate: (dateStr) => {
                 if(!dateStr) return '';
@@ -547,7 +548,7 @@
                             </div>
                             <div class="glass-card p-6 flex flex-col justify-between h-32 relative overflow-hidden group">
                                 <div class="absolute right-0 top-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                                    <i class="ph ph-currency-dollar text-8xl text-green-600"></i>
+                                    <i class="ph ph-money text-8xl text-green-600"></i>
                                 </div>
                                 <p class="text-sm font-bold text-slate-500 uppercase tracking-wider">Total Funds</p>
                                 <h3 class="text-4xl font-bold ${totalFunds < 0 ? 'text-red-600' : 'text-slate-800'}">${Utils.formatMoney(totalFunds)}</h3>
@@ -636,6 +637,7 @@
                                                     <span class="px-3 py-1 bg-white/60 border border-slate-200 text-slate-700 rounded-full text-xs font-bold uppercase">${m.department || m.role || 'Member'}</span>
                                                 </td>
                                                 <td class="px-8 py-5 text-right">
+                                                    <button onclick="app.modals.editMember('${m.id}')" class="text-blue-400 hover:text-blue-600 hover:bg-blue-50 p-2 rounded-lg transition-colors"><i class="ph ph-pencil-simple text-lg"></i></button>
                                                     <button onclick="app.deleteItem('${DB_KEYS.MEMBERS}', '${m.id}', 'members')" class="text-red-400 hover:text-red-600 hover:bg-red-50 p-2 rounded-lg transition-colors"><i class="ph ph-trash text-lg"></i></button>
                                                 </td>
                                             </tr>
@@ -675,6 +677,10 @@
                                                 <p class="text-xs font-medium text-slate-400 uppercase tracking-wide">${Utils.formatDate(r.date)}</p>
                                             </div>
                                             <span class="font-bold font-mono text-lg ${r.type === 'expense' ? 'text-red-500' : 'text-green-600'}">
+                                                <button onclick="app.modals.editFinance('${r.id}')" class="text-blue-400 hover:text-blue-600 hover:bg-blue-50 p-2 rounded-lg transition-colors"><i class="ph ph-pencil-simple text-lg"></i></button>
+                                                <button onclick="app.deleteItem('${DB_KEYS.FINANCE}', '${r.id}', 'finance')" class="text-red-400 hover:text-red-600 hover:bg-red-50 p-2 rounded-lg transition-colors"><i class="ph ph-trash text-lg"></i></button>
+                                            </span>
+                                            <span class="font-bold font-mono text-lg ${r.type === 'expense' ? 'text-red-500' : 'text-green-600'}">
                                                 ${r.type === 'expense' ? '-' : '+'}${Utils.formatMoney(r.amount)}
                                             </span>
                                         </div>
@@ -706,7 +712,8 @@
                                     </div>
                                     <div class="flex justify-between items-center mb-4">
                                         <span class="text-xs text-purple-600 bg-purple-50 px-2 py-1 rounded uppercase tracking-wide">${h.category || 'Song'}</span>
-                                        <button onclick="app.deleteItem('${DB_KEYS.HYMNS}', '${h.id}', 'worship')" class="text-slate-300 hover:text-red-500 p-1 transition-colors"><i class="ph ph-trash"></i></button>
+                                        <button onclick="app.modals.editHymn('${h.id}')" class="text-blue-400 hover:text-blue-600 hover:bg-blue-50 p-2 rounded-lg transition-colors"><i class="ph ph-pencil-simple text-lg"></i></button>
+                                        <button onclick="app.deleteItem('${DB_KEYS.HYMNS}', '${h.id}', 'worship')" class="text-red-400 hover:text-red-600 hover:bg-red-50 p-2 rounded-lg transition-colors"><i class="ph ph-trash"></i></button>
                                     </div>
                                     <div class="bg-slate-50/50 rounded-xl p-4 mb-4 border border-slate-100 h-32 overflow-hidden relative">
                                         <p class="text-slate-500 text-sm font-serif italic whitespace-pre-line leading-relaxed">${h.lyrics.substring(0, 150)}...</p>
@@ -739,7 +746,8 @@
                                     <div class="flex-1">
                                         <div class="flex justify-between items-start">
                                             <h3 class="text-xl font-bold text-slate-800 mb-2">${a.title}</h3>
-                                            <button onclick="app.deleteItem('${DB_KEYS.ANNOUNCEMENTS}', '${a.id}', 'announcements')" class="text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"><i class="ph ph-trash text-xl"></i></button>
+                                            <button onclick="app.modals.editAnnouncement('${a.id}')" class="text-blue-400 hover:text-blue-600 hover:bg-blue-50 p-2 rounded-lg transition-colors opacity-0 group-hover:opacity-100"><i class="ph ph-pencil-simple text-xl"></i></button>
+                                            <button onclick="app.deleteItem('${DB_KEYS.ANNOUNCEMENTS}', '${a.id}', 'announcements')" class="text-red-400 hover:text-red-600 hover:bg-red-50 p-2 rounded-lg transition-colors opacity-0 group-hover:opacity-100"><i class="ph ph-trash text-xl"></i></button>
                                         </div>
                                         <p class="text-slate-600 leading-relaxed whitespace-pre-wrap">${a.message}</p>
                                         <div class="mt-4 flex gap-2">
@@ -881,6 +889,13 @@
                                             <div class="flex-1 flex items-center px-4 bg-slate-50 rounded-xl text-slate-500 text-sm">Gradients, highlights</div>
                                         </div>
                                     </div>
+                                </div>
+
+                                <div class="mt-6">
+                                    <label class="block text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">Currency</label>
+                                    <select id="set-currency" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none">
+                                        ${(settings.currencies || []).map(c => `<option value="${c.symbol}" ${c.symbol === settings.currency ? 'selected' : ''}>${c.name} (${c.symbol})</option>`).join('')}
+                                    </select>
                                 </div>
                                 
                                 <div class="mt-6 flex justify-end">
@@ -1040,7 +1055,7 @@
                     this.open('Add New Member', `
                         <form onsubmit="app.handlers.saveMember(event)" class="space-y-5">
                             <div>
-                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Full Name</label>
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Full Name</label> 
                                 <input type="text" name="name" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none">
                             </div>
                             <div>
@@ -1059,6 +1074,34 @@
                         </form>
                     `);
                 },
+                editMember(id) {
+                    const members = Utils.safeArray(Store.get(DB_KEYS.MEMBERS));
+                    const member = members.find(m => m.id === id);
+                    if (!member) return;
+
+                    this.open('Edit Member', `
+                        <form onsubmit="app.handlers.updateMember(event, '${id}')" class="space-y-5">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Full Name</label>
+                                <input type="text" name="name" value="${member.fullName || member.name}" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Phone</label>
+                                <input type="tel" name="phone" value="${member.phone || ''}" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Role</label>
+                                <select name="role" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none">
+                                    <option value="Member" ${member.role === 'Member' ? 'selected' : ''}>Member</option>
+                                    <option value="Leader" ${member.role === 'Leader' ? 'selected' : ''}>Leader</option>
+                                    <option value="Visitor" ${member.role === 'Visitor' ? 'selected' : ''}>Visitor</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="w-full bg-theme-primary text-white py-3 rounded-xl font-bold shadow-lg hover:opacity-90 mt-4">Update Member</button>
+                        </form>
+                    `);
+                },
+
                 addFinance() {
                     this.open('Record Transaction', `
                         <form onsubmit="app.handlers.saveFinance(event)" class="space-y-5">
@@ -1088,6 +1131,39 @@
                         </form>
                     `);
                 },
+                editFinance(id) {
+                    const records = Utils.safeArray(Store.get(DB_KEYS.FINANCE));
+                    const record = records.find(r => r.id === id);
+                    if (!record) return;
+
+                    this.open('Edit Transaction', `
+                        <form onsubmit="app.handlers.updateFinance(event, '${id}')" class="space-y-5">
+                            <div class="grid grid-cols-2 gap-4">
+                                <label class="cursor-pointer">
+                                    <input type="radio" name="type" value="income" ${record.type === 'income' ? 'checked' : ''} class="peer sr-only">
+                                    <div class="p-3 text-center rounded-xl border border-slate-200 peer-checked:bg-green-50 peer-checked:border-green-500 peer-checked:text-green-700 font-bold transition-all">Income</div>
+                                </label>
+                                <label class="cursor-pointer">
+                                    <input type="radio" name="type" value="expense" ${record.type === 'expense' ? 'checked' : ''} class="peer sr-only">
+                                    <div class="p-3 text-center rounded-xl border border-slate-200 peer-checked:bg-red-50 peer-checked:border-red-500 peer-checked:text-red-700 font-bold transition-all">Expense</div>
+                                </label>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Category</label>
+                                <input type="text" name="category" value="${record.category}" placeholder="e.g. Sunday Tithe" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Amount</label>
+                                <input type="number" step="0.01" name="amount" value="${record.amount}" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-mono text-lg outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Date</label>
+                                <input type="date" name="date" required value="${record.date}" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none">
+                            </div>
+                            <button type="submit" class="w-full bg-green-600 text-white py-3 rounded-xl font-bold shadow-lg shadow-green-500/30 hover:opacity-90 mt-4">Update Transaction</button>
+                        </form>
+                    `);
+                },
                 addHymn() {
                     this.open('Add Song', `
                         <form onsubmit="app.handlers.saveHymn(event)" class="space-y-5">
@@ -1100,6 +1176,25 @@
                                 <textarea name="lyrics" rows="8" placeholder="Paste lyrics here (double space for new slides)..." required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none"></textarea>
                             </div>
                             <button type="submit" class="w-full bg-purple-600 text-white py-3 rounded-xl font-bold shadow-lg shadow-purple-500/30 hover:opacity-90 mt-4">Add to Library</button>
+                        </form>
+                    `);
+                },
+                editHymn(id) {
+                    const hymns = Utils.safeArray(Store.get(DB_KEYS.HYMNS));
+                    const hymn = hymns.find(h => h.id === id);
+                    if (!hymn) return;
+
+                    this.open('Edit Song', `
+                        <form onsubmit="app.handlers.updateHymn(event, '${id}')" class="space-y-5">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Title</label>
+                                <input type="text" name="title" value="${hymn.title}" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Lyrics</label>
+                                <textarea name="lyrics" rows="8" placeholder="Paste lyrics here (double space for new slides)..." required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none">${hymn.lyrics}</textarea>
+                            </div>
+                            <button type="submit" class="w-full bg-purple-600 text-white py-3 rounded-xl font-bold shadow-lg shadow-purple-500/30 hover:opacity-90 mt-4">Update Song</button>
                         </form>
                     `);
                 },
@@ -1121,6 +1216,29 @@
                             <button type="submit" class="w-full bg-orange-500 text-white py-3 rounded-xl font-bold shadow-lg shadow-orange-500/30 hover:opacity-90 mt-4">Post Announcement</button>
                         </form>
                     `);
+                },
+                editAnnouncement(id) {
+                    const list = Utils.safeArray(Store.get(DB_KEYS.ANNOUNCEMENTS));
+                    const announcement = list.find(a => a.id === id);
+                    if (!announcement) return;
+
+                    this.open('Edit Announcement', `
+                        <form onsubmit="app.handlers.updateAnnouncement(event, '${id}')" class="space-y-5">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Title</label>
+                                <input type="text" name="title" value="${announcement.title}" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Message</label>
+                                <textarea name="message" rows="4" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none">${announcement.message}</textarea>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Date</label>
+                                <input type="date" name="date" required value="${announcement.date}" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none">
+                            </div>
+                            <button type="submit" class="w-full bg-orange-500 text-white py-3 rounded-xl font-bold shadow-lg shadow-orange-500/30 hover:opacity-90 mt-4">Update Announcement</button>
+                        </form>
+                    `);
                 }
             },
 
@@ -1128,9 +1246,23 @@
                 saveMember(e) {
                     e.preventDefault();
                     const formData = new FormData(e.target);
-                    const members = Utils.safeArray(Store.get(DB_KEYS.MEMBERS));
-                    members.push({ id: Utils.id(), name: formData.get('name'), phone: formData.get('phone'), role: formData.get('role') });
+                    const members = Utils.safeArray(Store.get(DB_KEYS.MEMBERS)); 
+                    members.push({ id: Utils.id(), fullName: formData.get('name'), phone: formData.get('phone'), role: formData.get('role') });
                     Store.set(DB_KEYS.MEMBERS, members);
+                    document.getElementById('modal-backdrop').classList.add('hidden');
+                    app.nav('members');
+                },
+                updateMember(e, id) {
+                    e.preventDefault();
+                    const formData = new FormData(e.target);
+                    const members = Utils.safeArray(Store.get(DB_KEYS.MEMBERS));
+                    const memberIndex = members.findIndex(m => m.id === id);
+                    if (memberIndex > -1) {
+                        members[memberIndex].fullName = formData.get('name');
+                        members[memberIndex].phone = formData.get('phone');
+                        members[memberIndex].role = formData.get('role');
+                        Store.set(DB_KEYS.MEMBERS, members);
+                    }
                     document.getElementById('modal-backdrop').classList.add('hidden');
                     app.nav('members');
                 },
@@ -1143,12 +1275,39 @@
                     document.getElementById('modal-backdrop').classList.add('hidden');
                     app.nav('finance');
                 },
+                updateFinance(e, id) {
+                    e.preventDefault();
+                    const formData = new FormData(e.target);
+                    const records = Utils.safeArray(Store.get(DB_KEYS.FINANCE));
+                    const recordIndex = records.findIndex(r => r.id === id);
+                    if (recordIndex > -1) {
+                        records[recordIndex].type = formData.get('type');
+                        records[recordIndex].category = formData.get('category');
+                        records[recordIndex].amount = formData.get('amount');
+                        records[recordIndex].date = formData.get('date');
+                        Store.set(DB_KEYS.FINANCE, records);
+                    }
+                    document.getElementById('modal-backdrop').classList.add('hidden');
+                    app.nav('finance');
+                },
                 saveHymn(e) {
                     e.preventDefault();
                     const formData = new FormData(e.target);
                     const hymns = Utils.safeArray(Store.get(DB_KEYS.HYMNS));
                     hymns.push({ id: Utils.id(), title: formData.get('title'), lyrics: formData.get('lyrics') });
                     Store.set(DB_KEYS.HYMNS, hymns);
+                    document.getElementById('modal-backdrop').classList.add('hidden');
+                    app.nav('worship');
+                },
+                updateHymn(e, id) {
+                    e.preventDefault();
+                    const formData = new FormData(e.target);
+                    const hymns = Utils.safeArray(Store.get(DB_KEYS.HYMNS));
+                    const hymnIndex = hymns.findIndex(h => h.id === id);
+                    if (hymnIndex > -1) {
+                        hymns[hymnIndex] = { ...hymns[hymnIndex], title: formData.get('title'), lyrics: formData.get('lyrics') };
+                        Store.set(DB_KEYS.HYMNS, hymns);
+                    }
                     document.getElementById('modal-backdrop').classList.add('hidden');
                     app.nav('worship');
                 },
@@ -1161,6 +1320,19 @@
                     document.getElementById('modal-backdrop').classList.add('hidden');
                     app.nav('announcements');
                 },
+                updateAnnouncement(e, id) {
+                    e.preventDefault();
+                    const formData = new FormData(e.target);
+                    const list = Utils.safeArray(Store.get(DB_KEYS.ANNOUNCEMENTS));
+                    const announcementIndex = list.findIndex(a => a.id === id);
+                    if (announcementIndex > -1) {
+                        list[announcementIndex] = { ...list[announcementIndex], title: formData.get('title'), message: formData.get('message'), date: formData.get('date') };
+                        Store.set(DB_KEYS.ANNOUNCEMENTS, list);
+                    }
+                    document.getElementById('modal-backdrop').classList.add('hidden');
+                    app.nav('announcements');
+                },
+
                 sendMessage(e) {
                     e.preventDefault();
                     const input = document.getElementById('chat-input');
@@ -1188,12 +1360,14 @@
             saveSettings() {
                 const fileInput = document.getElementById('set-church-logo');
                 const saveLogic = (logoBase64) => {
+                    const oldSettings = Store.get(DB_KEYS.SETTINGS);
                     const newSettings = {
                         churchName: document.getElementById('set-church-name').value,
                         primaryColor: document.getElementById('set-primary-color').value,
                         secondaryColor: document.getElementById('set-secondary-color').value,
-                        currency: Store.get(DB_KEYS.SETTINGS).currency || '$',
-                        churchLogo: logoBase64 || Store.get(DB_KEYS.SETTINGS).churchLogo
+                        currency: document.getElementById('set-currency').value,
+                        churchLogo: logoBase64 || oldSettings.churchLogo,
+                        currencies: oldSettings.currencies
                     };
                     Store.set(DB_KEYS.SETTINGS, newSettings);
                     app.applySettings();
